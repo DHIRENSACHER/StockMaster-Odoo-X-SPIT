@@ -22,7 +22,7 @@ Traditional inventory management is reactive — businesses discover stockouts o
 
 </td>
 <td width="40%">
-<img src="screenshots/dashboard-hero.png" width="100%" alt="StockMaster Dashboard">
+<img src="/images/Sinal Stock.png" width="100%" alt="StockMaster Dashboard">
 </td>
 </tr>
 </table>
