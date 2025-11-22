@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Layers, ArrowLeft, Mail, Lock, CheckCircle2, ChevronRight } from 'lucide-react';
 import { GlassCard } from '../components/GlassCard';
+import { useAuth } from '../contexts/AuthContext';
 
 enum AuthStep {
   LOGIN,
@@ -16,16 +17,21 @@ interface AuthPageProps {
 export default function AuthPage({ onLoginSuccess, onBack }: AuthPageProps) {
   const [step, setStep] = useState<AuthStep>(AuthStep.LOGIN);
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { login } = useAuth();
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate network request
-    setTimeout(() => {
-      setIsLoading(false);
-      onLoginSuccess();
-    }, 1000);
+    setError(null);
+    login(email, password)
+      .then(onLoginSuccess)
+      .catch((err) => {
+        setError(err?.message || 'Unable to sign in');
+      })
+      .finally(() => setIsLoading(false));
   };
 
   const handleForgotSubmit = (e: React.FormEvent) => {
@@ -98,11 +104,15 @@ export default function AuthPage({ onLoginSuccess, onBack }: AuthPageProps) {
                          type="password" 
                          className="w-full bg-white/5 border border-white/10 rounded-lg py-3 pl-10 pr-4 text-sm text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder-gray-600"
                          placeholder="••••••••"
+                         value={password}
+                         onChange={(e) => setPassword(e.target.value)}
                          required
                        />
                      </div>
                    </div>
                  </div>
+
+                 {error && <p className="text-sm text-red-400 mb-3 text-center">{error}</p>}
 
                  <button 
                    disabled={isLoading}

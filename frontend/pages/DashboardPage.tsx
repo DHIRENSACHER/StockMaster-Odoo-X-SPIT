@@ -8,6 +8,7 @@ import {
   ArrowDownLeft, Menu, Layers, 
   ClipboardList, TrendingUp, Map
 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 // Import Pages
 import Overview from './dashboard/Overview';
@@ -22,6 +23,7 @@ import HeatmapView from './dashboard/Overview'; // For now using overview, Heatm
 export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
   const [view, setView] = useState<ViewState>(ViewState.DASHBOARD);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const { logout } = useAuth();
 
   const NavItem = ({ icon: Icon, label, active, onClick }: any) => (
     <button 
@@ -73,7 +75,10 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-purple-400 flex items-center justify-center text-xs font-bold border border-white/20">AD</div>
               {isSidebarOpen && <div className="text-xs"><p className="font-bold">Admin User</p><p className="text-gray-500">Head of Logistics</p></div>}
            </div>
-          <button onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all">
+          <button 
+            onClick={() => { logout(); onLogout(); }} 
+            className="w-full flex items-center gap-3 px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-all"
+          >
              <LogOut size={18} />
              {isSidebarOpen && <span>Sign Out</span>}
           </button>

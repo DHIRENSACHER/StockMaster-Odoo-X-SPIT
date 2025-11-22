@@ -1,7 +1,8 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Product, Operation, StockLedgerEntry } from '../types';
 import { MOCK_PRODUCTS, MOCK_OPERATIONS, MOCK_LEDGER } from '../constants';
+import { useAuth } from './AuthContext';
 
 interface StoreContextType {
   products: Product[];
@@ -17,21 +18,148 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider = ({ children }: { children?: ReactNode }) => {
-  // Initialize with mock data
+  const { apiFetch, token } = useAuth();
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [operations, setOperations] = useState<Operation[]>(MOCK_OPERATIONS);
   const [ledger, setLedger] = useState<StockLedgerEntry[]>(MOCK_LEDGER);
+  const apiReady = Boolean(import.meta.env.VITE_API_URL && token);
+
+  const mapProduct = (p: any): Product => ({
+    id: String(p.id),
+    name: p.name,
+    sku: p.sku,
+    category: p.category,
+    uom: p.uom,
+    quantity: Number(p.quantity ?? 0),
+    minStock: Number(p.minStock ?? 0),
+    maxStock: Number(p.maxStock ?? 0),
+    price: Number(p.price ?? 0),
+    location: p.location || 'WH-MAIN',
+    barcode: p.barcode,
+    qcStatus: p.qcStatus,
+  });
+
+  const mapOperation = (o: any): Operation => ({
+    id: String(o.id),
+    type: o.type,
+    reference: o.reference,
+    contact: o.contact,
+    responsible: o.responsible,
+    status: o.status,
+    sourceLocation: o.sourceLocation || undefined,
+    destLocation: o.destLocation || undefined,
+    scheduledDate: o.scheduledDate,
+    notes: o.notes,
+    version: o.version,
+    createdAt: o.createdAt,
+    lastEditedBy: o.lastEditedBy,
+    items: (o.items || []).map((i: any) => ({
+      productId: String(i.productId),
+      productName: i.productName,
+      quantity: Number(i.quantity),
+    })),
+  });
+
+  const mapLedger = (l: any): StockLedgerEntry => ({
+    id: String(l.id),
+    date: l.date,
+    reference: l.reference,
+    productName: l.productName,
+    sku: l.sku,
+    location: l.location,
+    credit: Number(l.credit ?? 0),
+    debit: Number(l.debit ?? 0),
+    balance: Number(l.balance ?? 0),
+    user: l.user,
+    type: l.type,
+  });
+
+  const loadFromApi = async () => {
+    if (!apiReady) return;
+    try {
+      const [apiProducts, apiOps, apiLedger] = await Promise.all([
+        apiFetch('/products'),
+        apiFetch('/operations'),
+        apiFetch('/ledger'),
+      ]);
+      setProducts((apiProducts as any[]).map(mapProduct));
+      setOperations((apiOps as any[]).map(mapOperation));
+      setLedger((apiLedger as any[]).map(mapLedger));
+    } catch (error) {
+      console.error('Failed to load from backend', error);
+    }
+  };
+
+  useEffect(() => {
+    if (!apiReady) {
+      setProducts(MOCK_PRODUCTS);
+      setOperations(MOCK_OPERATIONS);
+      setLedger(MOCK_LEDGER);
+      return;
+    }
+    loadFromApi();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [apiReady]);
 
   const addProduct = (product: Product) => {
     setProducts(prev => [product, ...prev]);
+    if (apiReady) {
+      apiFetch('/products', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: product.name,
+          sku: product.sku,
+          category: product.category,
+          uomCode: product.uom,
+          minStock: product.minStock,
+          maxStock: product.maxStock,
+          price: product.price,
+          locationCode: product.location?.toUpperCase(),
+          initialQuantity: product.quantity,
+          qcStatus: product.qcStatus || 'PASS',
+        }),
+      }).then(loadFromApi).catch((err) => console.error(err));
+    }
   };
 
   const addOperation = (op: Operation) => {
     setOperations(prev => [op, ...prev]);
+    if (apiReady) {
+      apiFetch('/operations', {
+        method: 'POST',
+        body: JSON.stringify({
+          type: op.type,
+          reference: op.reference,
+          contact: op.contact,
+          responsible: op.responsible,
+          sourceLocation: op.sourceLocation?.toUpperCase(),
+          destLocation: op.destLocation?.toUpperCase(),
+          scheduledDate: op.scheduledDate,
+          notes: op.notes,
+          status: op.status,
+          items: op.items.map(i => ({ productId: Number(i.productId), quantity: i.quantity })),
+        }),
+      }).then(loadFromApi).catch((err) => console.error(err));
+    }
   };
 
   const updateOperation = (id: string, updates: Partial<Operation>) => {
     setOperations(prev => prev.map(o => o.id === id ? { ...o, ...updates, lastEditedBy: 'Admin', version: (o.version || 1) + 1 } : o));
+    if (apiReady) {
+      const op = operations.find(o => o.id === id);
+      if (op) {
+        apiFetch(`/operations/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            ...op,
+            ...updates,
+            sourceLocation: updates.sourceLocation || op.sourceLocation?.toUpperCase(),
+            destLocation: updates.destLocation || op.destLocation?.toUpperCase(),
+            items: (updates.items || op.items).map(i => ({ productId: Number(i.productId), quantity: i.quantity })),
+          }),
+        }).then(loadFromApi).catch((err) => console.error(err));
+      }
+    }
   };
 
   const deleteOperation = (id: string) => {
@@ -145,6 +273,13 @@ export const StoreProvider = ({ children }: { children?: ReactNode }) => {
         type: ledgerType
       });
     });
+
+    if (apiReady) {
+      apiFetch(`/operations/${id}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'DONE' }),
+      }).then(loadFromApi).catch((err) => console.error(err));
+    }
   };
 
   return (
