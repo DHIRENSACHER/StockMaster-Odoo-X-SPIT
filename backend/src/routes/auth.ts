@@ -1,35 +1,32 @@
 import { Router } from 'express';
-import jwt from 'jsonwebtoken';
 import { z } from 'zod';
-import { env } from '../config/env';
 import { authenticate } from '../middleware/auth';
 import { HttpError } from '../middleware/errorHandler';
-import { findUserByEmail, verifyPassword } from '../services/userService';
+import { ensureUserFromFirebase } from '../services/userService';
+import { logAuthEvent } from '../services/auditService';
 
 const router = Router();
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+router.get('/me', authenticate, async (req, res) => {
+  res.json({ user: req.user });
 });
 
-router.post('/login', async (req, res, next) => {
+router.post('/sync', authenticate, async (req, res, next) => {
   try {
-    const { email, password } = loginSchema.parse(req.body);
-    const user = await findUserByEmail(email);
-    if (!user || !user.isActive) {
-      throw new HttpError(401, 'Invalid credentials');
-    }
-    const valid = await verifyPassword(password, user.passwordHash);
-    if (!valid) {
-      throw new HttpError(401, 'Invalid credentials');
-    }
-
-    const payload = { userId: user.id, email: user.email, roles: user.roles };
-    const token = jwt.sign(payload, env.jwtSecret, { expiresIn: '12h' });
-
+    if (!req.user?.email) throw new HttpError(401, 'Unauthenticated');
+    const user = await ensureUserFromFirebase({
+      email: req.user.email,
+      fullName: req.user.fullName,
+      firebaseUid: req.user.firebaseUid,
+    });
+    await logAuthEvent({
+      event: 'login',
+      userEmail: user.email,
+      firebaseUid: user.firebaseUid,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
     res.json({
-      token,
       user: {
         id: user.id,
         email: user.email,
@@ -42,8 +39,25 @@ router.post('/login', async (req, res, next) => {
   }
 });
 
-router.get('/me', authenticate, async (req, res) => {
-  res.json({ user: req.user });
+const trackSchema = z.object({
+  event: z.string(),
+});
+
+router.post('/track', authenticate, async (req, res, next) => {
+  try {
+    const { event } = trackSchema.parse(req.body);
+    if (!req.user?.email) throw new HttpError(401, 'Unauthenticated');
+    await logAuthEvent({
+      event,
+      userEmail: req.user.email,
+      firebaseUid: req.user.firebaseUid,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
 });
 
 export const authRouter = router;

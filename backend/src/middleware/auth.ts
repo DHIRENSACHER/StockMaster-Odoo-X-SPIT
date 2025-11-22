@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import { env } from '../config/env';
+import { firebaseAuth } from '../config/firebase';
 import { HttpError } from './errorHandler';
+import { ensureUserFromFirebase } from '../services/userService';
 
 export interface AuthPayload {
   userId: number;
   email: string;
   roles: string[];
+  firebaseUid?: string;
+  fullName?: string;
 }
 
 declare global {
@@ -17,15 +19,30 @@ declare global {
   }
 }
 
-export const authenticate = (req: Request, _res: Response, next: NextFunction) => {
+export const authenticate = async (req: Request, _res: Response, next: NextFunction) => {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
     return next(new HttpError(401, 'Authorization header missing'));
   }
   const token = header.substring(7);
   try {
-    const payload = jwt.verify(token, env.jwtSecret) as AuthPayload;
-    req.user = payload;
+    const payload = await firebaseAuth.verifyIdToken(token);
+    const email = payload.email;
+    if (!email) throw new HttpError(401, 'Email missing in token');
+
+    const user = await ensureUserFromFirebase({
+      email,
+      fullName: payload.name,
+      firebaseUid: payload.uid,
+    });
+
+    req.user = {
+      userId: user.id,
+      email: user.email,
+      roles: user.roles,
+      firebaseUid: payload.uid,
+      fullName: user.fullName,
+    };
     return next();
   } catch (error) {
     return next(new HttpError(401, 'Invalid or expired token'));

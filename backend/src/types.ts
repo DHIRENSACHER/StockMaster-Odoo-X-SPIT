@@ -66,6 +66,17 @@ export interface User {
   email: string;
   passwordHash: string;
   fullName: string;
+  firebaseUid?: string;
   isActive: boolean;
   roles: string[];
+}
+
+export interface AuthAuditLog {
+  id?: number;
+  userEmail: string;
+  firebaseUid?: string | null;
+  event: string;
+  ipAddress?: string | null;
+  userAgent?: string | null;
+  createdAt?: string;
 }

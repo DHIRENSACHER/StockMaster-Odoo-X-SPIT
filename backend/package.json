@@ -19,6 +19,7 @@
     "express-rate-limit": "^7.5.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
+    "firebase-admin": "^12.7.0",
     "mysql2": "^3.11.4",
     "pino": "^9.5.0",
     "pino-http": "^9.0.0",

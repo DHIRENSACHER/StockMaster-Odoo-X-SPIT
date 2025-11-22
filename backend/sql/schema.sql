@@ -25,9 +25,23 @@ CREATE TABLE IF NOT EXISTS inventory_user (
   email VARCHAR(255) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   full_name VARCHAR(255) NOT NULL,
+  firebase_uid VARCHAR(255) DEFAULT NULL,
   is_active TINYINT(1) DEFAULT 1,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Backward compatibility for existing databases
+SET @col_exists := (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME = 'inventory_user'
+    AND COLUMN_NAME = 'firebase_uid'
+);
+SET @sql := IF(@col_exists = 0, 'ALTER TABLE inventory_user ADD COLUMN firebase_uid VARCHAR(255) DEFAULT NULL', 'SELECT 1');
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;
 
 CREATE TABLE IF NOT EXISTS inventory_user_groups (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -45,6 +59,16 @@ CREATE TABLE IF NOT EXISTS inventory_user_user_permissions (
   CONSTRAINT fk_user_perm_user FOREIGN KEY (user_id) REFERENCES inventory_user(id),
   CONSTRAINT fk_user_perm_perm FOREIGN KEY (permission_id) REFERENCES auth_permission(id),
   UNIQUE KEY uniq_user_perm (user_id, permission_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS auth_audit_log (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_email VARCHAR(255) NOT NULL,
+  firebase_uid VARCHAR(255) NULL,
+  event VARCHAR(50) NOT NULL,
+  ip_address VARCHAR(64) NULL,
+  user_agent TEXT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Master data

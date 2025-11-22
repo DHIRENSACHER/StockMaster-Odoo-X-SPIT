@@ -14,6 +14,11 @@ export const env = {
   port: Number(process.env.PORT) || 4000,
   appName: process.env.APP_NAME || 'stockmaster',
   jwtSecret: required(process.env.JWT_SECRET, 'JWT_SECRET'),
+  firebase: {
+    projectId: required(process.env.FIREBASE_PROJECT_ID, 'FIREBASE_PROJECT_ID'),
+    clientEmail: required(process.env.FIREBASE_CLIENT_EMAIL, 'FIREBASE_CLIENT_EMAIL'),
+    privateKey: required(process.env.FIREBASE_PRIVATE_KEY, 'FIREBASE_PRIVATE_KEY'),
+  },
   db: {
     host: required(process.env.DB_HOST, 'DB_HOST'),
     port: Number(process.env.DB_PORT) || 3306,

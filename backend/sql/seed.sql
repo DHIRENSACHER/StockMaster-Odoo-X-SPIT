@@ -14,10 +14,10 @@ WHERE g.name = 'admin'
     SELECT 1 FROM auth_group_permissions gp WHERE gp.group_id = g.id AND gp.permission_id = p.id
   );
 
--- Admin user
-INSERT INTO inventory_user (email, password_hash, full_name, is_active)
-VALUES ('admin@stockmaster.com', '$2a$10$muSksiQHsMs0iik88vVxFeOV7Cn3pyKepwl..yvEvV92QfkW134nm', 'Admin User', 1)
-ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), full_name = VALUES(full_name), is_active = VALUES(is_active);
+-- Admin user (firebase uid placeholder)
+INSERT INTO inventory_user (email, password_hash, full_name, is_active, firebase_uid)
+VALUES ('admin@stockmaster.com', '$2a$10$muSksiQHsMs0iik88vVxFeOV7Cn3pyKepwl..yvEvV92QfkW134nm', 'Admin User', 1, 'seed-admin')
+ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), full_name = VALUES(full_name), is_active = VALUES(is_active), firebase_uid = VALUES(firebase_uid);
 
 INSERT INTO inventory_user_groups (user_id, group_id)
 SELECT u.id, g.id FROM inventory_user u, auth_group g
@@ -69,6 +69,12 @@ INSERT INTO inventory_stockquant (product_id, location_id, quantity, updated_at)
  ((SELECT id FROM inventory_product WHERE sku = 'ELEC-01'), (SELECT id FROM inventory_location WHERE code = 'WH-MAIN'), 200, NOW())
 ON DUPLICATE KEY UPDATE quantity = VALUES(quantity), updated_at = VALUES(updated_at);
 
+-- Audit trail samples
+INSERT INTO auth_audit_log (user_email, firebase_uid, event, ip_address, user_agent)
+VALUES
+ ('admin@stockmaster.com', 'seed-admin', 'seed_login', '127.0.0.1', 'seed-data')
+ON DUPLICATE KEY UPDATE event = VALUES(event);
+
 -- Sample operations
 INSERT INTO inventory_stockmove (type, reference, contact, responsible, status, source_location_id, dest_location_id, scheduled_date, notes, version, created_at, last_edited_by)
 VALUES
@@ -80,17 +86,17 @@ ON DUPLICATE KEY UPDATE status = VALUES(status), scheduled_date = VALUES(schedul
 
 -- Operation lines
 INSERT INTO inventory_stocktransfer (stockmove_id, product_id, quantity) VALUES
- ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/IN/0001'), (SELECT id FROM inventory_product WHERE sku = 'ST-20'), 100),
- ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/OUT/0001'), (SELECT id FROM inventory_product WHERE sku = 'FURN-01'), 5),
- ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/INT/0002'), (SELECT id FROM inventory_product WHERE sku = 'FURN-02'), 2),
- ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/IN/0003'), (SELECT id FROM inventory_product WHERE sku = 'ELEC-01'), 50)
+ ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/IN/0001' LIMIT 1), (SELECT id FROM inventory_product WHERE sku = 'ST-20' LIMIT 1), 100),
+ ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/OUT/0001' LIMIT 1), (SELECT id FROM inventory_product WHERE sku = 'FURN-01' LIMIT 1), 5),
+ ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/INT/0002' LIMIT 1), (SELECT id FROM inventory_product WHERE sku = 'FURN-02' LIMIT 1), 2),
+ ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/IN/0003' LIMIT 1), (SELECT id FROM inventory_product WHERE sku = 'ELEC-01' LIMIT 1), 50)
 ON DUPLICATE KEY UPDATE quantity = VALUES(quantity);
 
 -- Ledger
 INSERT INTO inventory_stockvaluationlayer (stockmove_id, product_id, location_id, debit_qty, credit_qty, balance, unit_cost, created_at, user_id)
 VALUES
- ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/IN/0001'), (SELECT id FROM inventory_product WHERE sku = 'ST-20'), (SELECT id FROM inventory_location WHERE code = 'WH-MAIN'), 100, 0, 120, 45, '2023-10-25 14:30:00', (SELECT id FROM inventory_user WHERE email = 'admin@stockmaster.com')),
- ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/OUT/0001'), (SELECT id FROM inventory_product WHERE sku = 'FURN-01'), (SELECT id FROM inventory_location WHERE code = 'WH-DISPATCH'), 0, 5, 15, 150, '2023-10-26 09:15:00', (SELECT id FROM inventory_user WHERE email = 'admin@stockmaster.com')),
- ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/INT/0002'), (SELECT id FROM inventory_product WHERE sku = 'FURN-02'), (SELECT id FROM inventory_location WHERE code = 'WH-DISPATCH'), 2, 0, 8, 220, '2023-10-26 11:00:00', (SELECT id FROM inventory_user WHERE email = 'admin@stockmaster.com')),
- ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/IN/0003'), (SELECT id FROM inventory_product WHERE sku = 'ELEC-01'), (SELECT id FROM inventory_location WHERE code = 'WH-MAIN'), 50, 0, 200, 300, '2023-10-27 16:45:00', (SELECT id FROM inventory_user WHERE email = 'admin@stockmaster.com'))
+ ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/IN/0001' LIMIT 1), (SELECT id FROM inventory_product WHERE sku = 'ST-20' LIMIT 1), (SELECT id FROM inventory_location WHERE code = 'WH-MAIN' LIMIT 1), 100, 0, 120, 45, '2023-10-25 14:30:00', (SELECT id FROM inventory_user WHERE email = 'admin@stockmaster.com' LIMIT 1)),
+ ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/OUT/0001' LIMIT 1), (SELECT id FROM inventory_product WHERE sku = 'FURN-01' LIMIT 1), (SELECT id FROM inventory_location WHERE code = 'WH-DISPATCH' LIMIT 1), 0, 5, 15, 150, '2023-10-26 09:15:00', (SELECT id FROM inventory_user WHERE email = 'admin@stockmaster.com' LIMIT 1)),
+ ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/INT/0002' LIMIT 1), (SELECT id FROM inventory_product WHERE sku = 'FURN-02' LIMIT 1), (SELECT id FROM inventory_location WHERE code = 'WH-DISPATCH' LIMIT 1), 2, 0, 8, 220, '2023-10-26 11:00:00', (SELECT id FROM inventory_user WHERE email = 'admin@stockmaster.com' LIMIT 1)),
+ ((SELECT id FROM inventory_stockmove WHERE reference = 'WH/IN/0003' LIMIT 1), (SELECT id FROM inventory_product WHERE sku = 'ELEC-01' LIMIT 1), (SELECT id FROM inventory_location WHERE code = 'WH-MAIN' LIMIT 1), 50, 0, 200, 300, '2023-10-27 16:45:00', (SELECT id FROM inventory_user WHERE email = 'admin@stockmaster.com' LIMIT 1))
 ON DUPLICATE KEY UPDATE debit_qty = VALUES(debit_qty), credit_qty = VALUES(credit_qty), balance = VALUES(balance), unit_cost = VALUES(unit_cost);

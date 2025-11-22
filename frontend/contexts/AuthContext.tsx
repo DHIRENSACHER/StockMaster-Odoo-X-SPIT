@@ -1,18 +1,29 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
+import { firebaseAuth } from '../firebaseClient';
 
 interface AuthUser {
-  id: number;
+  id?: number;
   email: string;
   fullName?: string;
   roles?: string[];
 }
 
 interface AuthContextType {
-  token?: string;
+  isLoaded: boolean;
+  isSignedIn: boolean;
   user?: AuthUser;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  token?: string;
   apiFetch: <T = unknown>(path: string, options?: RequestInit) => Promise<T>;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
@@ -20,36 +31,27 @@ const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [token, setToken] = useState<string | undefined>(() => localStorage.getItem('sm_token') || undefined);
-  const [user, setUser] = useState<AuthUser | undefined>(() => {
-    const stored = localStorage.getItem('sm_user');
-    return stored ? JSON.parse(stored) : undefined;
-  });
-
-  useEffect(() => {
-    if (token) localStorage.setItem('sm_token', token);
-    else localStorage.removeItem('sm_token');
-  }, [token]);
-
-  useEffect(() => {
-    if (user) localStorage.setItem('sm_user', JSON.stringify(user));
-    else localStorage.removeItem('sm_user');
-  }, [user]);
+  const [backendUser, setBackendUser] = useState<AuthUser | undefined>();
+  const [token, setToken] = useState<string | undefined>();
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [trackedLogin, setTrackedLogin] = useState(false);
+  const ready = Boolean(import.meta.env.VITE_API_URL);
 
   const apiFetch = useMemo(
     () => async <T,>(path: string, options: RequestInit = {}): Promise<T> => {
+      const idToken = token;
       const res = await fetch(`${API_BASE}${path}`, {
         ...options,
         headers: {
           'Content-Type': 'application/json',
           ...(options.headers || {}),
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(idToken ? { Authorization: `Bearer ${idToken}` } : {}),
         },
       });
       if (!res.ok) {
         if (res.status === 401 || res.status === 403) {
-          setToken(undefined);
-          setUser(undefined);
+          setBackendUser(undefined);
         }
         let message = await res.text();
         try {
@@ -66,22 +68,83 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     [token]
   );
 
-  const login = async (email: string, password: string) => {
-    const data = await apiFetch<{ token: string; user: AuthUser }>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
+  useEffect(() => {
+    const unsub = onAuthStateChanged(firebaseAuth, async (fbUser) => {
+      if (!fbUser) {
+        setBackendUser(undefined);
+        setToken(undefined);
+        setIsSignedIn(false);
+        setTrackedLogin(false);
+        setIsLoaded(true);
+        return;
+      }
+      const idToken = await fbUser.getIdToken();
+      setToken(idToken);
+      setIsSignedIn(true);
+      setIsLoaded(true);
+      if (!ready || !fbUser.email) return;
+      try {
+        const data = await apiFetch<{ user: AuthUser }>('/auth/sync', { method: 'POST' });
+        setBackendUser(data.user);
+        if (!trackedLogin) {
+          await apiFetch('/auth/track', { method: 'POST', body: JSON.stringify({ event: 'login' }) });
+          setTrackedLogin(true);
+        }
+      } catch (err) {
+        console.error('Auth sync failed', err);
+      }
     });
-    setToken(data.token);
-    setUser(data.user);
+    return () => unsub();
+  }, [apiFetch, ready, trackedLogin]);
+
+  const login = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(firebaseAuth, email, password);
   };
 
-  const logout = () => {
-    setToken(undefined);
-    setUser(undefined);
+  const signup = async (email: string, password: string) => {
+    const cred = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+    const idToken = await cred.user.getIdToken();
+    setToken(idToken);
+    try {
+      await apiFetch('/auth/sync', { method: 'POST' });
+      await apiFetch('/auth/track', { method: 'POST', body: JSON.stringify({ event: 'signup' }) });
+      setTrackedLogin(true);
+    } catch (err) {
+      console.error('Signup sync failed', err);
+    }
   };
+
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(firebaseAuth, email);
+  };
+
+  const logout = async () => {
+    try {
+      await apiFetch('/auth/track', { method: 'POST', body: JSON.stringify({ event: 'logout' }) });
+    } catch (e) {
+      // ignore
+    }
+    await firebaseAuth.signOut();
+    setBackendUser(undefined);
+    setTrackedLogin(false);
+  };
+
+  const mergedUser: AuthUser | undefined = backendUser;
 
   return (
-    <AuthContext.Provider value={{ token, user, login, logout, apiFetch }}>
+    <AuthContext.Provider
+      value={{
+        isLoaded,
+        isSignedIn,
+        user: mergedUser,
+        token,
+        apiFetch,
+        login,
+        signup,
+        resetPassword,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

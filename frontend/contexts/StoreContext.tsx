@@ -18,11 +18,11 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export const StoreProvider = ({ children }: { children?: ReactNode }) => {
-  const { apiFetch, token } = useAuth();
+  const { apiFetch, isSignedIn } = useAuth();
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [operations, setOperations] = useState<Operation[]>(MOCK_OPERATIONS);
   const [ledger, setLedger] = useState<StockLedgerEntry[]>(MOCK_LEDGER);
-  const apiReady = Boolean(import.meta.env.VITE_API_URL && token);
+  const apiReady = Boolean(import.meta.env.VITE_API_URL && isSignedIn);
 
   const mapProduct = (p: any): Product => ({
     id: String(p.id),
