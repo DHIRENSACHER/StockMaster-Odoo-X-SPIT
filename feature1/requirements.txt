@@ -1,0 +1,7 @@
+pandas 
+prophet 
+sqlalchemy 
+pymysql
+flask
+flask-cors
+cryptography

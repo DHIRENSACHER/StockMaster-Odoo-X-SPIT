@@ -34,7 +34,12 @@ export default function Overview() {
                <p className="text-purple-200 text-sm">Stockout predicted for <span className="font-bold text-white">Copper Wire</span> in 3 days. Suggested replenishment: 200m.</p>
             </div>
          </div>
-         <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-all border border-white/10">View Analysis</button>
+         <button 
+           onClick={() => window.open('http://localhost:5000/dashboard', '_blank')}
+           className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-all border border-white/10"
+         >
+           View Analysis
+         </button>
       </div>
 
       {/* Stats Grid */}
