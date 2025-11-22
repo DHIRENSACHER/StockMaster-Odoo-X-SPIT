@@ -8,6 +8,7 @@ import { useAuth } from './contexts/AuthContext';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
+import SmartCalc from './components/SmartCalc';
 
 function AppShell() {
   const [view, setView] = useState<ViewState>(ViewState.LANDING);
@@ -47,6 +48,7 @@ export default function App() {
     <AuthProvider>
       <Toaster position="top-right" />
       <AppShell />
+      <SmartCalc />
     </AuthProvider>
   );
 }

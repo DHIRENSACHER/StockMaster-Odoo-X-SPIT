@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Package, ArrowDownLeft, ArrowUpRight, AlertTriangle, Activity, TrendingUp } from 'lucide-react';
 import { useStore } from '../../contexts/StoreContext';
 import { GlassCard } from '../../components/GlassCard';
@@ -22,6 +22,42 @@ const StatCard = ({ icon: Icon, label, value, subValue, color }: any) => (
 
 export default function Overview() {
   const { products, operations } = useStore();
+  const [isRunningAnalysis, setIsRunningAnalysis] = useState(false);
+  const [analysisStatus, setAnalysisStatus] = useState<string | null>(null);
+
+  const handleViewAnalysis = async () => {
+    setAnalysisStatus(null);
+    setIsRunningAnalysis(true);
+
+    // Open the dashboard immediately in a new tab to avoid popup blockers.
+    // Then trigger the analysis API in the background.
+    const dashboardUrl = 'http://127.0.0.1:8080/dashboard';
+    try {
+      const newWin = window.open(dashboardUrl, '_blank', 'noopener,noreferrer');
+
+      // Fire-and-forget the generate endpoint; report status to the UI.
+      const apiUrl = 'http://127.0.0.1:8080/dashboard';
+      const res = await fetch(apiUrl, { method: 'POST' });
+      if (!res.ok) {
+        const message = await res.text();
+        throw new Error(message || 'Failed to start demand analysis');
+      }
+      setAnalysisStatus('Demand analysis completed successfully.');
+
+      // If the new window was opened to about:blank or similar, ensure it points to dashboard.
+      if (newWin && !newWin.closed) {
+        try {
+          newWin.location.href = dashboardUrl;
+        } catch (e) {
+          // cross-origin may block assignment; ignore safely
+        }
+      }
+    } catch (error: any) {
+      setAnalysisStatus(error?.message || 'Unable to run demand analysis right now.');
+    } finally {
+      setIsRunningAnalysis(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -34,8 +70,19 @@ export default function Overview() {
                <p className="text-purple-200 text-sm">Stockout predicted for <span className="font-bold text-white">Copper Wire</span> in 3 days. Suggested replenishment: 200m.</p>
             </div>
          </div>
-         <button className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-all border border-white/10">View Analysis</button>
+         <button 
+           onClick={handleViewAnalysis}
+           disabled={isRunningAnalysis}
+           className={`px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg text-sm font-medium transition-all border border-white/10 cursor-pointer ${isRunningAnalysis ? 'opacity-60 cursor-not-allowed' : ''}`}
+         >
+           {isRunningAnalysis ? 'Running...' : 'View Analysis'}
+         </button>
       </div>
+      {analysisStatus && (
+        <div className="text-sm text-purple-200 bg-purple-500/10 border border-purple-500/20 rounded-lg px-4 py-2">
+          {analysisStatus}
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
