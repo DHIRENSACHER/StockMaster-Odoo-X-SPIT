@@ -29,6 +29,10 @@ Traditional inventory management is reactive — businesses discover stockouts o
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=divider">
 
+## Lannding Page
+
+<img src="/images/landingpage.png" alt="Dashboard Overview" width="100%">
+
 ## 🧠 What It Does
 
 <div align="center">
@@ -71,9 +75,11 @@ This module transforms StockMaster from a simple reactive record-keeper into a *
 - **One-Click Reordering**: Users can convert an AI shortage alert into a concrete Purchase Order (Draft Receipt) with a single click
 - **Contextual Data**: The system automatically calculates the exact shortage quantity based on the forecast, eliminating guesswork
 
+<img src="/images/2.jpeg" alt="Dashboard Overview" width="100%">
+
 <img src="/images/1.jpeg" alt="Dashboard Overview" width="100%">
 
-<img src="/images/2.jpeg" alt="Dashboard Overview" width="100%">
+
 
 #### 4. Automatic Stock Manager Dashboard
 - **Glassmorphism UI**: A modern, dark-mode interface built with Bootstrap 5 and custom CSS
@@ -253,12 +259,19 @@ StockMaster-Odoo-X-SPIT/
 ```
 
 ## 🔗 Useful Links
-
 <div align="center">
+  <a href="https://www.linkedin.com/in/aayushkolte/" target="_blank">
+    <img src="https://img.shields.io/badge/Aayush_Kolte-LinkedIn-blue?style=for-the-badge&logo=linkedin&logoColor=white" alt="Aayush Kolte">
+  </a>
+  <a href="https://www.linkedin.com/in/akshat-sanjay-patil/?miniProfileUrn=urn%3Ali%3Afs_miniProfile%3AACoAAFG4OzEB0sb_rfikqAW2Jv0aBfi4AxXjvF0" target="_blank">
+    <img src="https://img.shields.io/badge/Akshat_Patil-LinkedIn-blue?style=for-the-badge&logo=linkedin&logoColor=white" alt="Akshat Patil">
+  </a>
+  <a href="https://www.linkedin.com/in/hitanshu--nayan-rathi/" target="_blank">
+    <img src="https://img.shields.io/badge/Hitanshu_Rathi-LinkedIn-blue?style=for-the-badge&logo=linkedin&logoColor=white" alt="Hitanshu Rathi">
+  </a>
   <a href="https://www.linkedin.com/in/dhirensacher" target="_blank">
     <img src="https://img.shields.io/badge/Dhiren_Sacher-LinkedIn-blue?style=for-the-badge&logo=linkedin&logoColor=white" alt="Dhiren Sacher">
   </a>
-  <!-- Add your team members here -->
 </div>
 
 <br>
@@ -266,5 +279,5 @@ StockMaster-Odoo-X-SPIT/
 > 📦 *"StockMaster — Never run out of stock again"*
 
 <div align="center">
-  <sub>Built with ❤️ by Team SPIT</sub>
+  <sub>Built with ❤️ by Team HackStreet</sub>
 </div>
