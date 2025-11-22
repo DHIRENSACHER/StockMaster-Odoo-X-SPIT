@@ -29,7 +29,7 @@ Traditional inventory management is reactive — businesses discover stockouts o
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&height=100&section=divider">
 
-## Lannding Page
+## Landing Page
 
 <img src="/images/landingpage.png" alt="Dashboard Overview" width="100%">
 
