@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { Toaster } from 'sonner';
 import { ViewState } from './types';
 import { StoreProvider } from './contexts/StoreContext';
 import { AuthProvider } from './contexts/AuthContext';
@@ -44,6 +45,7 @@ function AppShell() {
 export default function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-right" />
       <AppShell />
     </AuthProvider>
   );

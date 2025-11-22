@@ -13,7 +13,8 @@ export enum ViewState {
   HEATMAP,
   TIMELINE,
   SETTINGS,
-  PROFILE
+  PROFILE,
+  QUANTUM_INVENTORY
 }
 
 export interface Product {

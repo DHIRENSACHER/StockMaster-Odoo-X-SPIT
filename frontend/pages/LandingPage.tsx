@@ -44,6 +44,15 @@ export default function LandingPage({ onNavigateToLogin }: { onNavigateToLogin: 
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-20 px-6 overflow-hidden min-h-[90vh] flex flex-col justify-center items-center">
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-no-repeat opacity-40"
+          style={{ 
+            backgroundImage: "url('/pages/background/stockMaster.png')",
+            backgroundPosition: "center calc(80% + 200px)"
+          }}
+        />
+        
         {/* Spotlight Effects */}
         <div className="absolute top-[-20%] left-0 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] pointer-events-none z-0" />
         <div className="absolute top-[-20%] right-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
@@ -61,7 +70,7 @@ export default function LandingPage({ onNavigateToLogin }: { onNavigateToLogin: 
         <div className="max-w-6xl mx-auto text-center relative z-10 w-full">
           
           {/* Floating Element Left - Analytics */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-10 hidden xl:block pointer-events-none">
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-40 hidden xl:block pointer-events-none">
              <div className="w-64 p-4 glass-card rounded-2xl transform -rotate-12 animate-float border-t border-l border-white/20 shadow-2xl bg-black/40 backdrop-blur-xl">
                  <div className="w-full h-32 bg-gradient-to-br from-gray-900 to-black rounded-lg mb-4 relative overflow-hidden border border-white/5">
                     <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent"></div>
@@ -85,7 +94,7 @@ export default function LandingPage({ onNavigateToLogin }: { onNavigateToLogin: 
           </div>
 
           {/* Floating Element Right - Status */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-10 hidden xl:block pointer-events-none">
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-40 hidden xl:block pointer-events-none">
              <div className="w-64 p-5 glass-card rounded-2xl transform rotate-12 animate-float-delayed border-t border-r border-white/20 shadow-2xl bg-black/40 backdrop-blur-xl">
                  <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-[0_0_15px_rgba(109,40,217,0.5)]">
@@ -138,62 +147,66 @@ export default function LandingPage({ onNavigateToLogin }: { onNavigateToLogin: 
             </button>
           </div>
 
+        </div>
+      </section>
+
+      <section className="relative px-6 py-16 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-50"
+          style={{ backgroundImage: "url('/pages/background/floating_element.png')" }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#02010A] via-transparent to-transparent" />
+        <div className="max-w-6xl mx-auto relative z-10">
           {/* Refined Hero Visual: Digital Horizon */}
-          <div className="relative h-[200px] w-full max-w-4xl mx-auto">
-             {/* SVG Curve Container */}
-             <svg className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
-                <defs>
-                   <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="rgba(109, 40, 217, 0)" />
-                      <stop offset="20%" stopColor="rgba(109, 40, 217, 0.5)" />
-                      <stop offset="50%" stopColor="rgba(139, 92, 246, 1)" />
-                      <stop offset="80%" stopColor="rgba(109, 40, 217, 0.5)" />
-                      <stop offset="100%" stopColor="rgba(109, 40, 217, 0)" />
-                   </linearGradient>
-                </defs>
-                
-                {/* Main Curve */}
-                <path 
-                   d="M0,150 C200,150 300,50 500,50 C700,50 800,150 1000,150" 
-                   fill="none" 
-                   stroke="url(#lineGradient)" 
-                   strokeWidth="2" 
-                   vectorEffect="non-scaling-stroke"
-                />
-                
-                {/* Dashed Flowing Line */}
-                <path 
-                   d="M0,150 C200,150 300,50 500,50 C700,50 800,150 1000,150" 
-                   fill="none" 
-                   stroke="rgba(255,255,255,0.3)" 
-                   strokeWidth="2" 
-                   strokeDasharray="10, 10"
-                   className="animate-dash-flow"
-                   vectorEffect="non-scaling-stroke"
-                />
-             </svg>
+          <div className="relative h-[300px] w-full max-w-4xl mx-auto">
+            {/* SVG Curve Container */}
+            <svg className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="rgba(109, 40, 217, 0)" />
+                  <stop offset="20%" stopColor="rgba(109, 40, 217, 0.5)" />
+                  <stop offset="50%" stopColor="rgba(139, 92, 246, 1)" />
+                  <stop offset="80%" stopColor="rgba(109, 40, 217, 0.5)" />
+                  <stop offset="100%" stopColor="rgba(109, 40, 217, 0)" />
+                </linearGradient>
+              </defs>
+              <path
+                d="M0,150 C200,150 300,50 500,50 C700,50 800,150 1000,150"
+                fill="none"
+                stroke="url(#lineGradient)"
+                strokeWidth="2"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d="M0,150 C200,150 300,50 500,50 C700,50 800,150 1000,150"
+                fill="none"
+                stroke="rgba(255,255,255,0.3)"
+                strokeWidth="2"
+                strokeDasharray="10, 10"
+                className="animate-dash-flow"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
 
-             {/* Icons Positioned on the Curve */}
-             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-[118px] left-[15%] md:left-[20%] transform -translate-x-1/2 -translate-y-1/2">
-                   <div className="w-16 h-16 glass-card rounded-2xl flex items-center justify-center border border-primary/30 shadow-[0_0_30px_-5px_rgba(109,40,217,0.3)] bg-[#0a0a0a] animate-float">
-                      <Factory className="text-primary w-8 h-8" />
-                   </div>
+            {/* Icons Positioned on the Curve */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-[118px] left-[15%] md:left-[20%] -translate-x-1/2 -translate-y-1/2">
+                <div className="w-16 h-16 glass-card rounded-2xl flex items-center justify-center border border-primary/30 shadow-[0_0_30px_-5px_rgba(109,40,217,0.3)] bg-[#0a0a0a] animate-float">
+                  <Factory className="text-primary w-8 h-8" />
                 </div>
-                
-                <div className="absolute top-[50px] left-[50%] transform -translate-x-1/2 -translate-y-1/2">
-                   <div className="w-20 h-20 glass-card rounded-2xl flex items-center justify-center border border-white/20 shadow-[0_0_40px_-5px_rgba(255,255,255,0.1)] bg-[#0a0a0a] z-10 animate-float-delayed">
-                      <Layers className="text-white w-10 h-10" />
-                   </div>
-                   <div className="absolute top-full left-1/2 w-px h-20 bg-gradient-to-b from-white/20 to-transparent"></div>
+              </div>
+              <div className="absolute top-[50px] left-[50%] -translate-x-1/2 -translate-y-1/2">
+                <div className="w-20 h-20 glass-card rounded-2xl flex items-center justify-center border border-white/20 shadow-[0_0_40px_-5px_rgba(255,255,255,0.1)] bg-[#0a0a0a] z-10 animate-float-delayed">
+                  <Layers className="text-white w-10 h-10" />
                 </div>
-
-                <div className="absolute top-[118px] left-[85%] md:left-[80%] transform -translate-x-1/2 -translate-y-1/2">
-                   <div className="w-16 h-16 glass-card rounded-2xl flex items-center justify-center border border-blue-500/30 shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)] bg-[#0a0a0a] animate-float">
-                      <User className="text-blue-400 w-8 h-8" />
-                   </div>
+                <div className="absolute top-full left-1/2 w-px h-20 bg-gradient-to-b from-white/20 to-transparent" />
+              </div>
+              <div className="absolute top-[118px] left-[85%] md:left-[80%] -translate-x-1/2 -translate-y-1/2">
+                <div className="w-16 h-16 glass-card rounded-2xl flex items-center justify-center border border-blue-500/30 shadow-[0_0_30px_-5px_rgba(59,130,246,0.3)] bg-[#0a0a0a] animate-float">
+                  <User className="text-blue-400 w-8 h-8" />
                 </div>
-             </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

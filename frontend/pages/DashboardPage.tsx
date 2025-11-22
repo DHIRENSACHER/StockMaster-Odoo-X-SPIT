@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Package, ArrowRightLeft, Settings, 
   LogOut, Bell, Search, ChevronDown, ArrowUpRight, 
   ArrowDownLeft, Menu, Layers, 
-  ClipboardList, TrendingUp, Map
+  ClipboardList, TrendingUp, Map, Zap
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -19,6 +19,7 @@ import InternalTransfers from './dashboard/InternalTransfers';
 import Adjustments from './dashboard/Adjustments';
 import Ledger from './dashboard/Ledger';
 import HeatmapView from './dashboard/Overview'; // For now using overview, Heatmap is specific
+import QuantumInventory from './QuantumInventory';
 
 export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
   const [view, setView] = useState<ViewState>(ViewState.DASHBOARD);
@@ -67,6 +68,7 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
            
            <SectionLabel label={isSidebarOpen ? 'Intelligence' : '...'} />
            <NavItem icon={ClipboardList} label="Stock Ledger" active={view === ViewState.STOCK_LEDGER} onClick={() => setView(ViewState.STOCK_LEDGER)} />
+           <NavItem icon={Zap} label="Inventory Bot" active={view === ViewState.QUANTUM_INVENTORY} onClick={() => setView(ViewState.QUANTUM_INVENTORY)} />
            <NavItem icon={Map} label="Settings" active={view === ViewState.SETTINGS} onClick={() => setView(ViewState.SETTINGS)} />
         </div>
 
@@ -113,15 +115,16 @@ export default function DashboardPage({ onLogout }: { onLogout: () => void }) {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8 relative custom-scrollbar">
-           {view === ViewState.DASHBOARD && <Overview />}
-           {view === ViewState.PRODUCTS && <Products />}
-           {view === ViewState.OPERATIONS_RECEIPTS && <Receipts />}
-           {view === ViewState.OPERATIONS_DELIVERIES && <Deliveries />}
-           {view === ViewState.OPERATIONS_INTERNAL && <InternalTransfers />}
-           {view === ViewState.OPERATIONS_ADJUSTMENTS && <Adjustments />}
-           {view === ViewState.STOCK_LEDGER && <Ledger />}
-           {view === ViewState.SETTINGS && <div className="text-center py-20 text-gray-500">Settings Panel Placeholder</div>}
+        <div className="flex-1 overflow-y-auto relative custom-scrollbar">
+           {view === ViewState.DASHBOARD && <div className="p-6 md:p-8"><Overview /></div>}
+           {view === ViewState.PRODUCTS && <div className="p-6 md:p-8"><Products /></div>}
+           {view === ViewState.OPERATIONS_RECEIPTS && <div className="p-6 md:p-8"><Receipts /></div>}
+           {view === ViewState.OPERATIONS_DELIVERIES && <div className="p-6 md:p-8"><Deliveries /></div>}
+           {view === ViewState.OPERATIONS_INTERNAL && <div className="p-6 md:p-8"><InternalTransfers /></div>}
+           {view === ViewState.OPERATIONS_ADJUSTMENTS && <div className="p-6 md:p-8"><Adjustments /></div>}
+           {view === ViewState.STOCK_LEDGER && <div className="p-6 md:p-8"><Ledger /></div>}
+           {view === ViewState.QUANTUM_INVENTORY && <QuantumInventory />}
+           {view === ViewState.SETTINGS && <div className="p-6 md:p-8 text-center py-20 text-gray-500">Settings Panel Placeholder</div>}
         </div>
       </main>
     </div>
